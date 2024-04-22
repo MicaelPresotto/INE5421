@@ -68,12 +68,12 @@ def print_dfa(dfa_states, dfa_inital_state, dfa_final_states, alphabet, dfa_tran
     for transition in dfa_transitions:
         if dfa_transitions[transition] == []:
             continue
-        stringBuilder = '{'
+        string_builder = '{'
         for state in transition[0]:
-            stringBuilder += state
-        stringBuilder += '}'
-        stringBuilder += f",{transition[1]},{{{''.join(dfa_transitions[transition])}}}"
-        print_for_transitions.append(stringBuilder)
+            string_builder += state
+        string_builder += '}'
+        string_builder += f",{transition[1]},{{{''.join(dfa_transitions[transition])}}}"
+        print_for_transitions.append(string_builder)
     print(f"{len(dfa_states)};{{{''.join(dfa_inital_state)}}};{{{','.join(dfa_final_states)}}};{{{','.join(alphabet)}}};{';'.join(print_for_transitions)}")
                 
             
@@ -83,8 +83,8 @@ dfa_states, dfa_inital_state, dfa_final_states, alphabet, dfa_transitions = nfa_
 true_final_states = []
 dfa_final_states = sorted(dfa_final_states)
 for final_states in dfa_final_states:
-    stringBuilder = '{'
+    string_builder = '{'
     for state in final_states:
-        stringBuilder += state
-    true_final_states.append(stringBuilder+'}')
+        string_builder += state
+    true_final_states.append(string_builder+'}')
 print_dfa(dfa_states, dfa_inital_state, true_final_states, alphabet, dfa_transitions)
