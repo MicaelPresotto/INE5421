@@ -65,6 +65,12 @@ def nfa_to_dfs(initial_state, final_states, alphabet, transition_dict):
 
 def print_dfa(dfa_states, dfa_inital_state, dfa_final_states, alphabet, dfa_transitions):
     print_for_transitions = []
+    print_for_final_states = []
+    for final_states in dfa_final_states:
+        string_builder = '{'
+        for state in final_states:
+            string_builder += state
+        print_for_final_states.append(string_builder+'}')
     for transition in dfa_transitions:
         if dfa_transitions[transition] == []:
             continue
@@ -74,18 +80,12 @@ def print_dfa(dfa_states, dfa_inital_state, dfa_final_states, alphabet, dfa_tran
         string_builder += '}'
         string_builder += f",{transition[1]},{{{''.join(dfa_transitions[transition])}}}"
         print_for_transitions.append(string_builder)
-    print(f"{len(dfa_states)};{{{''.join(dfa_inital_state)}}};{{{','.join(dfa_final_states)}}};{{{','.join(alphabet)}}};{';'.join(print_for_transitions)}")
+    print(f"{len(dfa_states)};{{{''.join(dfa_inital_state)}}};{{{','.join(print_for_final_states)}}};{{{','.join(alphabet)}}};{';'.join(print_for_transitions)}")
                 
             
 input_string = [x for x in input().split(';')]
 num_states, inital_state, final_states, alphabet, transition_dict = parse_input(input_string)
 dfa_states, dfa_inital_state, dfa_final_states, alphabet, dfa_transitions = nfa_to_dfs(inital_state, final_states, alphabet, transition_dict)
-true_final_states = []
 dfa_final_states = sorted(dfa_final_states)
 dfa_transitions = dict(sorted(dfa_transitions.items()))
-for final_states in dfa_final_states:
-    string_builder = '{'
-    for state in final_states:
-        string_builder += state
-    true_final_states.append(string_builder+'}')
-print_dfa(dfa_states, dfa_inital_state, true_final_states, alphabet, dfa_transitions)
+print_dfa(dfa_states, dfa_inital_state, dfa_final_states, alphabet, dfa_transitions)
