@@ -17,14 +17,14 @@ def parse_input(input_string):
 
 def epsilon_closure(states, transition_dict):
     closure = set(states)
-    stack = list(states)
-    while stack:
-        state = stack.pop()
+    queue = list(states)
+    while queue:
+        state = queue.pop()
         if (state, '&') in transition_dict:
             for dest in transition_dict[(state, '&')]:
                 if dest not in closure:
                     closure.add(dest)
-                    stack.append(dest)
+                    queue.append(dest)
     return sorted(closure)
 
 def nfa_to_dfs(initial_state, final_states, alphabet, transition_dict):
@@ -82,6 +82,7 @@ num_states, inital_state, final_states, alphabet, transition_dict = parse_input(
 dfa_states, dfa_inital_state, dfa_final_states, alphabet, dfa_transitions = nfa_to_dfs(inital_state, final_states, alphabet, transition_dict)
 true_final_states = []
 dfa_final_states = sorted(dfa_final_states)
+dfa_transitions = dict(sorted(dfa_transitions.items()))
 for final_states in dfa_final_states:
     string_builder = '{'
     for state in final_states:
