@@ -2,7 +2,7 @@ from copy import deepcopy
 
 input_string = [x for x in input().split(';')]
 input_string.remove('')
-def parse_input(input_string):
+def parseInput(input_string):
     grammar = {}
     for i in input_string:
         i.replace(' ', '')
@@ -14,29 +14,14 @@ def parse_input(input_string):
         grammar[head].append(body)
     return grammar
 
-def print_formatted(firsts : dict, follows : dict, heads : list):
-    for i, head in enumerate(heads):
-        print(f"First({head}) = \x7B{', '.join(custom_sort(firsts[head]))}\x7D", end='; ')
-    for i, head in enumerate(heads):
-        print(f"Follow({head}) = \x7B{', '.join(custom_sort(follows[head]))}\x7D", end=f";{(1 - (i // len(follows[head]) - 1)) * ' '}")
-
-def custom_sort(lst: dict) -> list:
-    new_lst = list(lst.copy())
-    new_lst.sort()
-    for c in ["&", "$"]:
-        if c in new_lst: 
-            new_lst.remove(c)
-            new_lst.append(c)
-    return new_lst
-
-def calculate_firsts(grammar: dict):
+def calculateFirsts(grammar: dict):
     firsts = {head: set() for head in grammar}
     while True:
         first_copy = deepcopy(firsts)
         for head, body in grammar.items():
             for production in body:
                 for i, char in enumerate(production):
-                    if is_terminal(char) or char == "&":
+                    if isTerminal(char) or char == "&":
                         firsts[head].add(char)
                         break
                     firsts[head].update(firsts[char])
@@ -48,7 +33,7 @@ def calculate_firsts(grammar: dict):
             break
     return firsts
 
-def calculate_follows(grammar: dict, firsts: dict):
+def calculateFollows(grammar: dict, firsts: dict):
     follows = {}
     for i,head in enumerate(grammar.keys()):
         follows[head] = set()
@@ -59,18 +44,18 @@ def calculate_follows(grammar: dict, firsts: dict):
         for head, body in grammar.items():
             for symbol in body:
                 for i, char in enumerate(symbol):
-                    if is_terminal(char) or char == "&": 
+                    if isTerminal(char) or char == "&": 
                         continue
                     else:
                         if i == len(symbol) - 1:
                             for c in symbol[::-1]:
-                                if is_terminal(c):
+                                if isTerminal(c):
                                     break
                                 follows[c].update(follows[head])
                                 if "&" not in firsts[c]: break
                         else:
                             for j in symbol[i+1:]:
-                                if is_terminal(j):
+                                if isTerminal(j):
                                     follows[char].add(j)
                                     break
                                 follows[char].update(firsts[j])
@@ -80,20 +65,20 @@ def calculate_follows(grammar: dict, firsts: dict):
             break
     return follows
 
-def is_terminal(symbol):
+def isTerminal(symbol):
     return symbol.islower()
 
-def getBodyFirst(production:str, firsts:dict):
+def getProductionFirsts(production:str, firsts:dict):
     body_firsts = set()
     for i,symbol in enumerate(production):
-        if is_terminal(symbol) and i==0 or symbol=="&":
+        if isTerminal(symbol) and i==0 or symbol=="&":
             return {symbol}
-        if not is_terminal(symbol) and i==0 and "&" not in firsts[symbol]:
+        if not isTerminal(symbol) and i==0 and "&" not in firsts[symbol]:
             return firsts[symbol]
         body_firsts.update(firsts[symbol])
         body_firsts.discard("&")
         for char in production[1:]:
-            if is_terminal(char):
+            if isTerminal(char):
                 body_firsts.add(char)
                 return body_firsts
             if "&" in firsts[char]:
@@ -104,7 +89,7 @@ def getBodyFirst(production:str, firsts:dict):
             return body_firsts
     count_epsilon = 0
     for char in production:
-        if is_terminal(char) or char=="&":
+        if isTerminal(char) or char=="&":
             break
         else:
             if "&" in firsts[char]:
@@ -123,7 +108,7 @@ def getLL1ParsingTable(firsts: dict, follows:dict, grammar:dict):
     for head,body in grammar.items():
         for production in body:
             i+=1
-            body_firsts = getBodyFirst(production, firsts)
+            body_firsts = getProductionFirsts(production, firsts)
             for symbol in body_firsts:
                if symbol == "&":
                    for f in follows[head]:
@@ -132,11 +117,11 @@ def getLL1ParsingTable(firsts: dict, follows:dict, grammar:dict):
                     ll1ParsingTable.add(tuple([head,symbol, i]))
     return list(ll1ParsingTable)
 
-def is_factored(grammar: dict, firsts: dict):
-    for head, body in grammar.items():
+def isFactored(grammar: dict, firsts: dict):
+    for body in grammar.values():
         elements = []
         for production in body:
-            body_firsts = getBodyFirst(production, firsts)
+            body_firsts = getProductionFirsts(production, firsts)
             if "&" in body_firsts:
                 body_firsts.remove("&")
             for i in body_firsts:
@@ -145,7 +130,7 @@ def is_factored(grammar: dict, firsts: dict):
             return False            
     return True
 
-def is_left_recursive(grammar: dict, firsts: dict) -> bool:
+def isLeftRecursive(grammar: dict, firsts: dict):
     # direct left recursion
     heads_reached_dict = {head: set() for head in grammar}
     for head,body in grammar.items():
@@ -153,7 +138,7 @@ def is_left_recursive(grammar: dict, firsts: dict) -> bool:
             for c in production:
                 if c == head:
                     return True
-                if is_terminal(c) or c == "&":
+                if isTerminal(c) or c == "&":
                     break
                 heads_reached_dict[head].add(c)
                 if "&" not in firsts[c]:
@@ -172,7 +157,7 @@ def is_left_recursive(grammar: dict, firsts: dict) -> bool:
                     to_expand.add(h)
     return False
  
-def firstAndFollowsConflictOk(firsts: dict, follows: dict, heads: list):
+def hasConflictFirstAndFollows(firsts: dict, follows: dict, heads: list):
     for head in heads:
         first = firsts[head]
         follow = follows[head]
@@ -180,7 +165,7 @@ def firstAndFollowsConflictOk(firsts: dict, follows: dict, heads: list):
             return False
     return True
 
-def print_formatted(start: str, heads : list, ll1_table: list, terminals: list):
+def printFormatted(start: str, heads : list, ll1_table: list, terminals: list):
     print(f"\x7B{','.join(sorted(heads))}\x7D", end=",")
     print(start, end=",")
     custom_sort = lambda c: 123 if c == "$" else ord(c)
@@ -191,39 +176,25 @@ def print_formatted(start: str, heads : list, ll1_table: list, terminals: list):
     for item in ll1_table: print(f"[{item[0]},{item[1]},{item[2]}]", end="")
 
 def main():
-    grammar = parse_input(input_string)
+    grammar = parseInput(input_string)
 
-    firsts_of_grammar = calculate_firsts(grammar)
-    follows_of_grammar = calculate_follows(grammar, firsts_of_grammar)
+    firsts_of_grammar = calculateFirsts(grammar)
+    follows_of_grammar = calculateFollows(grammar, firsts_of_grammar)
 
-    if not is_factored(grammar, firsts_of_grammar):
+    if not isFactored(grammar, firsts_of_grammar):
         print("The grammar is not factored")
         return
-    if is_left_recursive(grammar, firsts_of_grammar):
+    if isLeftRecursive(grammar, firsts_of_grammar):
         print("The grammar is left recursive")
         return
 
-    if not firstAndFollowsConflictOk(firsts_of_grammar, follows_of_grammar, list(grammar.keys())):
+    if not hasConflictFirstAndFollows(firsts_of_grammar, follows_of_grammar, list(grammar.keys())):
         print("The grammar has a conflict between firsts and follows")
         return
     
-    terminals = set([char for body in grammar.values() for production in body for char in production if is_terminal(char)]).union({"$"})
+    terminals = set([char for body in grammar.values() for production in body for char in production if isTerminal(char)]).union({"$"})
 
     ll1Table = getLL1ParsingTable(firsts_of_grammar, follows_of_grammar, grammar)
-    print_formatted(list(grammar.keys())[0], list(grammar.keys()), ll1Table, terminals)
+    printFormatted(list(grammar.keys())[0], list(grammar.keys()), ll1Table, terminals)
 
 main()
-def print_formatted(firsts : dict, follows : dict, heads : list):
-    for i, head in enumerate(heads):
-        print(f"First({head}) = \x7B{', '.join(custom_sort(firsts[head]))}\x7D", end='; ')
-    for i, head in enumerate(heads):
-        print(f"Follow({head}) = \x7B{', '.join(custom_sort(follows[head]))}\x7D", end=f";{(1 - (i // len(follows[head]) - 1)) * ' '}")
-
-def custom_sort(lst: dict) -> list:
-    new_lst = list(lst.copy())
-    new_lst.sort()
-    for c in ["&", "$"]:
-        if c in new_lst: 
-            new_lst.remove(c)
-            new_lst.append(c)
-    return new_lst
